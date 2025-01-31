@@ -1,0 +1,42 @@
+@startuml User_Service_Components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Компоненты сервиса управления пользователями и подписками
+
+Container_Boundary(user_service, "Сервис управления пользователями и подписками") {
+    Component(user_controller, "UserController", "Spring REST", "API для управления пользователями")
+    Component(subscription_controller, "SubscriptionController", "Spring REST", "API для управления подписками")
+    
+    Component(user_service_component, "UserService", "Spring Service", "Бизнес-логика управления пользователями")
+    Component(subscription_service, "SubscriptionService", "Spring Service", "Бизнес-логика управления подписками")
+    Component(auth_service, "AuthenticationService", "Spring Security", "Аутентификация и авторизация")
+    
+    Component(user_repository, "UserRepository", "Spring Data JPA", "Доступ к данным пользователей")
+    Component(subscription_repository, "SubscriptionRepository", "Spring Data JPA", "Доступ к данным подписок")
+    
+    Component(payment_integration, "PaymentIntegration", "Service", "Интеграция с платёжными системами")
+    Component(notification_service, "NotificationService", "Service", "Отправка уведомлений")
+    Component(role_manager, "RoleManager", "Service", "Управление ролями и правами")
+    
+    Component(kafka_user_client, "KafkaClient", "Spring Kafka", "Работа с Kafka")
+}
+
+' Связи для управления пользователями
+Rel(user_controller, user_service_component, "Использует")
+Rel(user_service_component, user_repository, "Использует")
+Rel(user_service_component, auth_service, "Использует")
+Rel(user_service_component, role_manager, "Использует")
+Rel(user_service_component, notification_service, "Использует")
+
+' Связи для управления подписками
+Rel(subscription_controller, subscription_service, "Использует")
+Rel(subscription_service, subscription_repository, "Использует")
+Rel(subscription_service, payment_integration, "Использует")
+Rel(subscription_service, notification_service, "Использует")
+
+' Общие связи
+Rel(auth_service, role_manager, "Использует")
+Rel(user_service_component, kafka_user_client, "Публикует события")
+Rel(subscription_service, kafka_user_client, "Публикует события")
+
+@enduml

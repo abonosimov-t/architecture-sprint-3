@@ -1,0 +1,119 @@
+asyncapi: '2.6.0'
+info:
+  title: Система умного дома "Тёплый дом" - Асинхронное API
+  version: '0.0.1'
+  description: |
+    Спецификация асинхронного API для взаимодействия между микросервисами системы умного дома
+
+servers:
+  kafka:
+    url: kafka:9092
+    protocol: kafka
+    description: Apache Kafka брокер сообщений
+
+channels:
+  device.events:
+    publish:
+      summary: События от устройств
+      operationId: publishDeviceEvent
+      message:
+        $ref: '#/components/messages/DeviceEvent'
+    subscribe:
+      summary: Подписка на события устройств
+      operationId: subscribeToDeviceEvents
+      message:
+        $ref: '#/components/messages/DeviceEvent'
+
+  device.telemetry:
+    publish:
+      summary: Телеметрия устройств
+      operationId: publishTelemetry
+      message:
+        $ref: '#/components/messages/DeviceTelemetry'
+    subscribe:
+      summary: Подписка на телеметрию
+      operationId: subscribeToTelemetry
+      message:
+        $ref: '#/components/messages/DeviceTelemetry'
+
+  scenario.events:
+    publish:
+      summary: События сценариев
+      operationId: publishScenarioEvent
+      message:
+        $ref: '#/components/messages/ScenarioEvent'
+    subscribe:
+      summary: Подписка на события сценариев
+      operationId: subscribeToScenarioEvents
+      message:
+        $ref: '#/components/messages/ScenarioEvent'
+
+components:
+  messages:
+    DeviceEvent:
+      name: deviceEvent
+      title: Событие устройства
+      payload:
+        type: object
+        properties:
+          deviceId:
+            type: string
+            description: Уникальный идентификатор устройства
+          eventType:
+            type: string
+            enum: [CONNECTED, DISCONNECTED, STATE_CHANGED, ERROR]
+            description: Тип события устройства
+          timestamp:
+            type: string
+            format: date-time
+            description: Время события
+          data:
+            type: object
+            description: Дополнительные данные события
+
+    DeviceTelemetry:
+      name: deviceTelemetry
+      title: Телеметрия устройства
+      payload:
+        type: object
+        properties:
+          deviceId:
+            type: string
+            description: Уникальный идентификатор устройства
+          sensorType:
+            type: string
+            description: Тип датчика (температура, влажность и т.д.)
+          metric_value:
+            type: number
+            description: Значение показателя
+          metric_type:
+            type: string
+            description: Значение показателя
+          unit:
+            type: string
+            description: Единица измерения
+          timestamp:
+            type: string
+            format: date-time
+            description: Время измерения
+
+    ScenarioEvent:
+      name: scenarioEvent
+      title: Событие сценария
+      payload:
+        type: object
+        properties:
+          scenarioId:
+            type: string
+            description: Идентификатор сценария
+          eventType:
+            type: string
+            enum: [STARTED, COMPLETED, FAILED]
+            description: Тип события сценария
+          timestamp:
+            type: string
+            format: date-time
+            description: Время события
+          details:
+            type: object
+            description: Детали выполнения сценария

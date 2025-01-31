@@ -1,0 +1,19 @@
+@startuml Telemetry_Components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Компоненты сервиса телеметрии
+
+Container_Boundary(telemetry, "Сервис телеметрии") {
+    Component(telemetry_collector, "TelemetryCollector", "Service", "Сбор данных с устройств")
+    Component(telemetry_processor, "TelemetryProcessor", "Service", "Обработка телеметрических данных")
+    Component(telemetry_repository, "TelemetryRepository", "Spring Data JPA", "Доступ к данным телеметрии")
+    Component(kafka_consumer, "KafkaConsumer", "Spring Kafka", "Получение событий из Kafka")
+    Component(metrics_aggregator, "MetricsAggregator", "Service", "Агрегация метрик")
+}
+
+Rel(kafka_consumer, telemetry_processor, "Передает данные")
+Rel(telemetry_collector, telemetry_processor, "Передает данные")
+Rel(telemetry_processor, telemetry_repository, "Сохраняет данные")
+Rel(telemetry_processor, metrics_aggregator, "Использует")
+
+@enduml

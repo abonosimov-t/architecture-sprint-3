@@ -1,0 +1,281 @@
+@startuml ER_Diagram
+!define table(x) class x << (T,#FFAAAA) >>
+!define primary_key(x) <b>x</b>
+!define foreign_key(x) <i>x</i>
+
+hide stereotes
+
+skinparam class {
+    ArrowColor #2688d4
+    BorderColor #2688d4
+}
+
+table(User) {
+    +primary_key(id): UUID
+    +email: String
+    +password_hash: String
+    +first_name: String
+    +last_name: String
+    +phone: String
+    +status: UserStatus
+    +created_at: DateTime
+    +updated_at: DateTime
+    +void register()
+    +void unregister()
+    +void login()
+}
+
+table(Home) {
+    +primary_key(id): UUID
+    +foreign_key(owner_id): UUID
+    +name: String
+    +address: String
+    +timezone: String
+    +created_at: DateTime
+    +updated_at: DateTime
+    +void add()
+    +void delete()
+}
+
+table(DeviceType) {
+    +primary_key(id): UUID
+    +name: String
+    +description: String
+    +category: String
+    +capabilities: String
+    +created_at: DateTime
+    +updated_at: DateTime
+}
+
+table(Device) {
+    +primary_key(id): UUID
+    +foreign_key(home_id): UUID
+    +foreign_key(model_id): UUID
+    +foreign_key(device_type_id): UUID
+    +name: String
+    +type: DeviceType
+    +model: String
+    +manufacturer: String
+    +serial_number: String
+    +firmware_version: String
+    +status: DeviceStatus
+    +last_online: DateTime
+    +created_at: DateTime
+    +updated_at: DateTime
+    +void register()
+    +void update()
+}
+
+
+table(TelemetryData) {
+    +primary_key(id): UUID
+    +foreign_key(device_id): UUID
+    +metric_name: String
+    +metric_value: Double
+    +unit: String
+    +timestamp: DateTime
+    +void send()
+}
+
+table(UserHomeAccess) {
+    +primary_key(id): UUID
+    +foreign_key(user_id): UUID
+    +foreign_key(home_id): UUID
+    +access_level: AccessLevel
+    +granted_at: DateTime
+}
+
+table(Scenario) {
+    +primary_key(id): UUID
+    +foreign_key(home_id): UUID
+    +foreign_key(created_by): UUID
+    +name: String
+    +description: String
+    +status: ScenarioStatus
+    +trigger_type: TriggerType
+    +created_at: DateTime
+    +updated_at: DateTime
+}
+
+table(ScenarioCondition) {
+    +primary_key(id): UUID
+    +foreign_key(scenario_id): UUID
+    +foreign_key(device_id): UUID
+    +condition_type: ConditionType
+    +parameter: String
+    +operator: OperatorType
+    +value: String
+    +created_at: DateTime
+}
+
+table(ScenarioAction) {
+    +primary_key(id): UUID
+    +foreign_key(scenario_id): UUID
+    +foreign_key(device_id): UUID
+    +foreign_key(feature_id): UUID
+    +action_type: ActionType
+    +parameter: String
+    +value: String
+    +execution_order: Integer
+    +created_at: DateTime
+    +void checkFeature()
+}
+
+table(ScenarioExecution) {
+    +primary_key(id): UUID
+    +foreign_key(scenario_id): UUID
+    +status: ExecutionStatus
+    +started_at: DateTime
+    +completed_at: DateTime
+    +error_message: String
+}
+
+table(Subscription) {
+    +primary_key(id): UUID
+    +foreign_key(user_id): UUID
+    +plan_type: PlanType
+    +status: SubscriptionStatus
+    +start_date: DateTime
+    +end_date: DateTime
+    +auto_renewal: Boolean
+    +payment_method: String
+    +last_payment_date: DateTime
+    +next_payment_date: DateTime
+    +created_at: DateTime
+    +updated_at: DateTime
+    +void add()
+    +void activate()
+    +void inactivate()
+}
+
+table(SubscriptionFeature) {
+    +primary_key(id): UUID
+    +foreign_key(subscription_id): UUID
+    +feature_name: String
+    +feature_value: String
+    +created_at: DateTime
+}
+
+table(Module) {
+    +primary_key(id): UUID
+    +foreign_key(home_id): UUID
+    +name: String
+    +description: String
+    +type: ModuleType
+    +status: ModuleStatus
+    +created_at: DateTime
+    +updated_at: DateTime
+}
+
+table(ModuleDevice) {
+    +primary_key(id): UUID
+    +foreign_key(module_id): UUID
+    +foreign_key(device_id): UUID
+    +role: String
+    +created_at: DateTime
+}
+
+' Отношения
+User "1" -- "0..*" UserHomeAccess
+Home "1" -- "0..*" UserHomeAccess
+Home "1" -- "0..*" Device
+Device "1" -- "*" TelemetryData
+Device "*" -- "*" ScenarioCondition
+Scenario "1" -- "*" ScenarioCondition
+Scenario "1" -- "*" ScenarioAction
+ScenarioAction "1" -- "1" SubscriptionFeature
+Scenario "1" -- "*" ScenarioExecution
+Home "1" -- "*" Scenario
+User "1" -- "*" Scenario
+User "1" -- "*" Subscription
+Subscription "1" -- "*" SubscriptionFeature
+Module "1" -- "*" ModuleDevice
+Device "1" -- "*" ModuleDevice
+Home "1" -- "*" Module
+
+' Добавляем связи для DeviceType
+DeviceType "1" -- "*" Device
+
+
+note right of Device
+  DeviceStatus:
+  - ON
+  - OFF
+  - UNKNOWN
+end note
+
+
+note right of User
+  UserStatus:
+  - ACTIVE
+  - INACTIVE
+  - BLOCKED
+end note
+
+note right of DeviceType
+  Примеры категорий:
+  - SENSOR
+  - SWITCH
+  - THERMOSTAT
+  - CAMERA
+  - LOCK
+end note
+
+note right of UserHomeAccess
+  AccessLevel:
+  - OWNER
+  - ADMIN
+  - USER
+  - GUEST
+end note
+
+note right of Scenario
+  ScenarioStatus:
+  - ACTIVE
+  - INACTIVE
+  - DRAFT
+  
+  TriggerType:
+  - SCHEDULE
+  - EVENT
+  - MANUAL
+  - CONDITION
+end note
+
+note right of ScenarioCondition
+  ConditionType:
+  - SENSOR_VALUE
+  - TIME
+  - DEVICE_STATUS
+  - WEATHER
+  
+  OperatorType:
+  - EQUALS
+  - GREATER_THAN
+  - LESS_THAN
+  - BETWEEN
+end note
+
+note right of ScenarioAction
+  ActionType:
+  - SWITCH_ON
+  - SWITCH_OFF
+  - SET_VALUE
+  - SEND_NOTIFICATION
+end note
+
+note right of Subscription
+  PlanType:
+  - FREE
+  - BASIC
+  - PREMIUM
+  - PROFESSIONAL
+  
+  SubscriptionStatus:
+  - ACTIVE
+  - INACTIVE
+  - EXPIRED
+  - CANCELLED
+end note
+
+@enduml

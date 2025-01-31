@@ -1,0 +1,16 @@
+@startuml C4_Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Диаграмма контекста системы умного дома (C4 Model)
+
+Person(homeowner, "Владелец дома", "Пользователь, который управляет системой умного дома")
+
+System(smartHome, "Система умного дома", "Позволяет управлять отоплением и мониторить температуру в доме")
+System_Ext(heatingSystem, "Система отопления", "Управляет отоплением в доме")
+System_Ext(temperatureSensor, "Датчик температуры", "Предоставляет данные о температуре в доме")
+
+Rel(homeowner, smartHome, "Управляет системой", "HTTPS/REST")
+Rel(smartHome, heatingSystem, "Запрашивает управление системой отопления")
+Rel(smartHome, temperatureSensor, "Запрашивает показания датчика")
+
+@enduml

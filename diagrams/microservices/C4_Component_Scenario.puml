@@ -1,0 +1,23 @@
+@startuml Scenario_Components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Компоненты сервиса сценариев
+
+Container_Boundary(scenario, "Сервис сценариев") {
+    Component(scenario_controller, "ScenarioController", "Spring REST", "API для управления сценариями")
+    Component(scenario_service, "ScenarioService", "Spring Service", "Бизнес-логика сценариев")
+    Component(scenario_repository, "ScenarioRepository", "Spring Data JPA", "Доступ к данным сценариев")
+    Component(scenario_executor, "ScenarioExecutor", "Service", "Выполнение сценариев")
+    Component(condition_evaluator, "ConditionEvaluator", "Service", "Оценка условий")
+    Component(action_executor, "ActionExecutor", "Service", "Выполнение действий")
+    Component(kafka_scenario_client, "KafkaClient", "Spring Kafka", "Работа с Kafka")
+}
+
+Rel(scenario_controller, scenario_service, "Использует")
+Rel(scenario_service, scenario_repository, "Использует")
+Rel(scenario_service, scenario_executor, "Использует")
+Rel(scenario_executor, condition_evaluator, "Использует")
+Rel(scenario_executor, action_executor, "Использует")
+Rel(scenario_executor, kafka_scenario_client, "Использует")
+
+@enduml
