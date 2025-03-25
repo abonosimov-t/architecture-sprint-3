@@ -1,0 +1,21 @@
+@startuml Device_Management_Components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Компоненты сервиса управления устройствами
+
+Container_Boundary(device_management, "Сервис управления устройствами") {
+    Component(device_controller, "DeviceController", "Spring REST", "API для управления устройствами")
+    Component(device_service, "DeviceService", "Spring Service", "Бизнес-логика управления устройствами")
+    Component(device_repository, "DeviceRepository", "Spring Data JPA", "Доступ к данным устройств")
+    Component(device_command_handler, "DeviceCommandHandler", "Service", "Обработка команд устройств")
+    Component(device_protocol_adapter, "DeviceProtocolAdapter", "Service", "Адаптер протоколов устройств")
+    Component(kafka_producer, "KafkaProducer", "Spring Kafka", "Отправка событий в Kafka")
+}
+
+Rel(device_controller, device_service, "Использует")
+Rel(device_service, device_repository, "Использует")
+Rel(device_service, device_command_handler, "Использует")
+Rel(device_command_handler, device_protocol_adapter, "Использует")
+Rel(device_service, kafka_producer, "Публикует события")
+
+@enduml

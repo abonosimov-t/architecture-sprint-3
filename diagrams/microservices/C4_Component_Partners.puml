@@ -1,0 +1,21 @@
+@startuml Partner_Integration_Components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Компоненты сервиса интеграции с партнёрами
+
+Container_Boundary(partner_integration, "Сервис интеграции с партнёрами") {
+    Component(partner_controller, "PartnerController", "Spring REST", "API для партнёров")
+    Component(partner_service, "PartnerService", "Spring Service", "Бизнес-логика интеграции")
+    Component(device_registration, "DeviceRegistration", "Service", "Регистрация устройств")
+    Component(partner_adapter, "PartnerAdapter", "Service", "Адаптер API партнёров")
+    Component(security_validator, "SecurityValidator", "Service", "Проверка безопасности")
+    Component(kafka_integration_client, "KafkaClient", "Spring Kafka", "Работа с Kafka")
+}
+
+Rel(partner_controller, partner_service, "Использует")
+Rel(partner_service, device_registration, "Использует")
+Rel(partner_service, partner_adapter, "Использует")
+Rel(partner_service, security_validator, "Использует")
+Rel(partner_service, kafka_integration_client, "Использует")
+
+@enduml

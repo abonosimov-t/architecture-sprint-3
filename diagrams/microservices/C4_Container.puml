@@ -1,0 +1,78 @@
+@startuml C4_Containers
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Диаграмма контейнеров системы умного дома (C4 Model)
+
+Person(homeowner, "Владелец дома", "Управляет устройствами и настраивает сценарии")
+Person_Ext(partner, "Партнёр", "Поставщик устройств умного дома")
+
+System_Boundary(smart_home, "Система умного дома") {
+    Container(web_app, "Веб-приложение", "React", "Пользовательский интерфейс для управления системой")
+    Container(mobile_app, "Мобильное приложение", "React Native", "Мобильный интерфейс для управления системой")
+    
+    Container(api_gateway, "API Gateway", "Spring Cloud Gateway", "Маршрутизация запросов и аутентификация")
+    Container(websocket_gateway, "Websocket Gateway", "", "Маршрутизация запросов и аутентификация")
+        
+    Container(device_management, "Ceрвис управления устройствами умного дома", "Spring Boot", "Регистрация, подключение и управление устройствами")
+    Container(user_service, "Ceрвис управления пользователями и подписками", "Spring Boot", "Управление пользовательскими аккаунтами и подписками")
+    Container(scenario_service, "Управление сценариями", "Spring Boot", "Создание и выполнение автоматических сценариев")
+    Container(telemetry_service, "Сервис телеметрии", "Spring Boot", "Сбор и хранение данных с устройств")
+    Container(partner_integration, "Интеграция с партнёрами", "Spring Boot", "API для интеграции устройств партнёров")
+    
+    ContainerDb(device_db, "База данных устройств", "PostgreSQL", "Хранение информации об устройствах и их настройках")
+    ContainerDb(telemetry_db, "База данных телеметрии", "TimescaleDB", "Хранение исторических данных телеметрии")
+    ContainerDb(scenario_db, "База данных сценариев", "PostgreSQL", "Хранение сценариев автоматизации")
+    
+    Container(message_broker, "Message Broker", "Apache Kafka", "Обмен сообщениями между сервисами")
+}
+
+' Истончики данных
+System_Ext(partner_system, "Система партнёра", "Внешняя система управления устройствами партнёра")
+System_Ext(sources, "Устройства и источники данных") {
+    Container(devices, "Устройства умного дома") {
+        Component(temp_device, "Датчик температуры", "Измеряет температуру окружающей среды") 
+        Component(video_device, "Видеокамеры", "Транслирует видео для удалённого наблюдения")
+        Component(gate_device, "Автоматически ворота", "Управление открыванием/закрыванием ворот")
+        Component(another_devices, "Другие устройства", "Другие функции умного дома")
+    }
+}
+
+' Связи с пользователями
+Rel(homeowner, web_app, "Использует", "HTTPS")
+Rel(homeowner, mobile_app, "Использует", "HTTPS")
+Rel(partner, partner_integration, "Регистрирует устройства", "HTTPS")
+
+' Связи веб-приложений с API Gateway и WebSocket Gateway
+Rel(web_app, api_gateway, "Отправляет запросы", "HTTPS/JSON")
+Rel(web_app, websocket_gateway, "Отправляет запросы ", "WebSocket")
+Rel(mobile_app, api_gateway, "Отправляет запросы", "HTTPS/JSON")
+Rel(mobile_app, websocket_gateway, "Отправляет запросы", "WebSocket")
+
+' Связи API Gateway с сервисами
+Rel(api_gateway, device_management, "Маршрутизирует запросы", "HTTPS/JSON")
+Rel(api_gateway, scenario_service, "Маршрутизирует запросы", "HTTPS/JSON")
+Rel(api_gateway, partner_integration, "Маршрутизирует запросы", "HTTPS/JSON")
+Rel(websocket_gateway, device_management, "Маршрутизирует запросы", "WebSocket")
+Rel(websocket_gateway, user_service, "Маршрутизирует запросы", "WebSocket")
+Rel(websocket_gateway, scenario_service, "Маршрутизирует запросы", "WebSocket")
+
+' Связи сервисов с базами данных
+Rel(device_management, device_db, "Читает/Пишет", "JDBC")
+Rel(telemetry_service, telemetry_db, "Читает/Пишет", "JDBC")
+Rel(scenario_service, scenario_db, "Читает/Пишет", "JDBC")
+
+' Связи через Message Broker
+Rel(device_management, message_broker, "Публикует события устройств")
+Rel(telemetry_service, message_broker, "Подписывается на события")
+Rel(scenario_service, message_broker, "Публикует/Подписывается",)
+Rel(partner_integration, message_broker, "Публикует/Подписывается",)
+
+' Связи сервиса по протоколу устройств
+Rel(telemetry_service, sources, 'Собирает данные с устройств')
+Rel(device_management, sources, 'Посылает команды управления устройствами')
+
+' Внешние связи
+Rel(partner_integration, partner_system, "Интегрируется", "HTTPS/JSON")
+
+@enduml
